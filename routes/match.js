@@ -52,13 +52,13 @@ const getRandomMatch = (userMajor, previousMatches = []) => {
 
 // Sticker counts for each major (frontend has the actual files)
 const STICKER_COUNTS = {
-  Architecture: 6,  // sticker.webp through sticker 6.webp
+  Architecture: 6,
   Civil: 8,
   Mechanical: 9,
   EC: 8,
   EP: 8,
   CEIT: 9,
-  MC: 1,  // sticker1.svg
+  MC: 9,
   Petroleum: 8,
   Chemical: 9,
 };
@@ -67,10 +67,6 @@ const STICKER_COUNTS = {
 const getAllStickerIds = (major) => {
   const count = STICKER_COUNTS[major] || 0;
   const ids = [];
-  
-  if (major === "MC") {
-    return ["sticker1"];  // MC uses different naming
-  }
   
   for (let i = 1; i <= count; i++) {
     if (i === 1) {
