@@ -50,116 +50,56 @@ const getRandomMatch = (userMajor, previousMatches = []) => {
   return availableMajors[randomIndex];
 };
 
-// Get random sticker from major's folder with exclusion of previous stickers
-// Hardcoded sticker lists for each major (since frontend has the actual files)
-const STICKER_LISTS = {
-  Architecture: [
-    "/stickers/Architecture/sticker.webp",
-    "/stickers/Architecture/sticker 2.webp",
-    "/stickers/Architecture/sticker 3.webp",
-    "/stickers/Architecture/sticker 4.webp",
-    "/stickers/Architecture/sticker 5.webp",
-    "/stickers/Architecture/sticker 6.webp",
-  ],
-  Civil: [
-    "/stickers/Civil/sticker.webp",
-    "/stickers/Civil/sticker 2.webp",
-    "/stickers/Civil/sticker 3.webp",
-    "/stickers/Civil/sticker 4.webp",
-    "/stickers/Civil/sticker 5.webp",
-    "/stickers/Civil/sticker 6.webp",
-    "/stickers/Civil/sticker 7.webp",
-    "/stickers/Civil/sticker 8.webp",
-  ],
-  Mechanical: [
-    "/stickers/Mechanical/sticker.webp",
-    "/stickers/Mechanical/sticker 2.webp",
-    "/stickers/Mechanical/sticker 3.webp",
-    "/stickers/Mechanical/sticker 4.webp",
-    "/stickers/Mechanical/sticker 5.webp",
-    "/stickers/Mechanical/sticker 6.webp",
-    "/stickers/Mechanical/sticker 7.webp",
-    "/stickers/Mechanical/sticker 8.webp",
-    "/stickers/Mechanical/sticker 9.webp",
-  ],
-  EC: [
-    "/stickers/EC/sticker.webp",
-    "/stickers/EC/sticker 2.webp",
-    "/stickers/EC/sticker 3.webp",
-    "/stickers/EC/sticker 4.webp",
-    "/stickers/EC/sticker 5.webp",
-    "/stickers/EC/sticker 6.webp",
-    "/stickers/EC/sticker 7.webp",
-    "/stickers/EC/sticker 8.webp",
-  ],
-  EP: [
-    "/stickers/EP/sticker.webp",
-    "/stickers/EP/sticker 2.webp",
-    "/stickers/EP/sticker 3.webp",
-    "/stickers/EP/sticker 4.webp",
-    "/stickers/EP/sticker 5.webp",
-    "/stickers/EP/sticker 6.webp",
-    "/stickers/EP/sticker 7.webp",
-    "/stickers/EP/sticker 8.webp",
-  ],
-  CEIT: [
-    "/stickers/CEIT/sticker.webp",
-    "/stickers/CEIT/sticker 2.webp",
-    "/stickers/CEIT/sticker 3.webp",
-    "/stickers/CEIT/sticker 4.webp",
-    "/stickers/CEIT/sticker 5.webp",
-    "/stickers/CEIT/sticker 6.webp",
-    "/stickers/CEIT/sticker 7.webp",
-    "/stickers/CEIT/sticker 8.webp",
-    "/stickers/CEIT/sticker 9.webp",
-  ],
-  MC: ["/stickers/MC/sticker1.svg"],
-  Petroleum: [
-    "/stickers/Petroleum/sticker.webp",
-    "/stickers/Petroleum/sticker 2.webp",
-    "/stickers/Petroleum/sticker 3.webp",
-    "/stickers/Petroleum/sticker 4.webp",
-    "/stickers/Petroleum/sticker 5.webp",
-    "/stickers/Petroleum/sticker 6.webp",
-    "/stickers/Petroleum/sticker 7.webp",
-    "/stickers/Petroleum/sticker 8.webp",
-  ],
-  Chemical: [
-    "/stickers/Chemical/sticker.webp",
-    "/stickers/Chemical/sticker 2.webp",
-    "/stickers/Chemical/sticker 3.webp",
-    "/stickers/Chemical/sticker 4.webp",
-    "/stickers/Chemical/sticker 5.webp",
-    "/stickers/Chemical/sticker 6.webp",
-    "/stickers/Chemical/sticker 7.webp",
-    "/stickers/Chemical/sticker 8.webp",
-    "/stickers/Chemical/sticker 9.webp",
-  ],
+// Sticker counts for each major (frontend has the actual files)
+const STICKER_COUNTS = {
+  Architecture: 6,  // sticker.webp through sticker 6.webp
+  Civil: 8,
+  Mechanical: 9,
+  EC: 8,
+  EP: 8,
+  CEIT: 9,
+  MC: 1,  // sticker1.svg
+  Petroleum: 8,
+  Chemical: 9,
 };
 
-// Get all stickers from a major
-const getAllStickers = (major) => {
-  return STICKER_LISTS[major] || [];
+// Get all sticker IDs for a major
+const getAllStickerIds = (major) => {
+  const count = STICKER_COUNTS[major] || 0;
+  const ids = [];
+  
+  if (major === "MC") {
+    return ["sticker1"];  // MC uses different naming
+  }
+  
+  for (let i = 1; i <= count; i++) {
+    if (i === 1) {
+      ids.push("sticker");
+    } else {
+      ids.push(`sticker ${i}`);
+    }
+  }
+  return ids;
 };
 
-const getRandomSticker = (major, previousStickers = []) => {
-  const imageFiles = STICKER_LISTS[major] || [];
+// Get random sticker ID from major
+const getRandomStickerId = (major, previousStickerIds = []) => {
+  const stickerIds = getAllStickerIds(major);
 
-  if (imageFiles.length === 0) {
-    return `/stickers/${major}/placeholder.png`;
+  if (stickerIds.length === 0) {
+    return "placeholder";
   }
 
-  // Filter out previously shown stickers
-  const unshownStickers = imageFiles.filter(
-    (url) => !previousStickers.includes(url),
+  // Filter out previously shown sticker IDs
+  const unshownIds = stickerIds.filter(
+    (id) => !previousStickerIds.includes(id),
   );
 
   // If all stickers have been shown, reset and allow all again
-  const availableStickers =
-    unshownStickers.length === 0 ? imageFiles : unshownStickers;
+  const availableIds = unshownIds.length === 0 ? stickerIds : unshownIds;
 
-  const randomIndex = Math.floor(Math.random() * availableStickers.length);
-  return availableStickers[randomIndex];
+  const randomIndex = Math.floor(Math.random() * availableIds.length);
+  return availableIds[randomIndex];
 };
 
 // POST /api/match - Main matching endpoint
@@ -183,22 +123,22 @@ router.post("/match", async (req, res) => {
     // Generate random match, excluding previous matches
     const matched_major = getRandomMatch(major, previousMatches || []);
 
-    // Get random sticker, excluding previous stickers
-    const sticker = await getRandomSticker(
+    // Get random sticker ID, excluding previous sticker IDs
+    const stickerId = getRandomStickerId(
       matched_major,
       previousStickers || [],
     );
 
-    // Get all stickers for the matched major (for slot animation)
-    const allStickers = await getAllStickers(matched_major);
+    // Get all sticker IDs for the matched major (for slot animation)
+    const allStickerIds = getAllStickerIds(matched_major);
 
     // Don't save to database yet - only when user confirms with "I like this one"
 
     // Return match result
     res.json({
       matched_major,
-      sticker_url: sticker,
-      all_stickers: allStickers,
+      sticker_id: stickerId,
+      all_sticker_ids: allStickerIds,
       personality_description: PERSONALITIES[matched_major],
       name,
     });
@@ -213,10 +153,10 @@ router.post("/match", async (req, res) => {
 // POST /api/confirm-match - Save confirmed match to database
 router.post("/confirm-match", async (req, res) => {
   try {
-    const { name, major, matched_major, sticker_url } = req.body;
+    const { name, major, matched_major, sticker_id } = req.body;
 
     // Validate input
-    if (!name || !major || !matched_major || !sticker_url) {
+    if (!name || !major || !matched_major || !sticker_id) {
       return res.status(400).json({
         error: "All fields are required",
       });
@@ -233,7 +173,7 @@ router.post("/confirm-match", async (req, res) => {
       name,
       major,
       matched_major,
-      sticker: sticker_url,
+      sticker: sticker_id,
     });
 
     await user.save();
