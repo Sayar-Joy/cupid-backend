@@ -30,7 +30,10 @@ app.get("/", (req, res) => {
   res.json({ message: "Cupid Pudding API is running!" });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+// Start server - Listen on all network interfaces
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on:`);
+  console.log(`  Local:   http://localhost:${PORT}`);
+  console.log(`  Network: http://0.0.0.0:${PORT}`);
+  console.log(`  API:     http://localhost:${PORT}/api`);
 });
