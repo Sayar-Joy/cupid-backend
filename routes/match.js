@@ -1,7 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const fs = require("fs").promises;
-const path = require("path");
 const User = require("../models/User");
 
 // Available majors
@@ -53,60 +51,115 @@ const getRandomMatch = (userMajor, previousMatches = []) => {
 };
 
 // Get random sticker from major's folder with exclusion of previous stickers
-// Get all stickers from a major's folder
-const getAllStickers = async (major) => {
-  try {
-    const stickerDir = path.join(__dirname, "..", "public", "stickers", major);
-    const files = await fs.readdir(stickerDir);
-    const imageFiles = files.filter((file) =>
-      /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file),
-    );
-
-    return imageFiles.map((file) => `/stickers/${major}/${file}`);
-  } catch (error) {
-    console.error(`Error getting all stickers for ${major}:`, error);
-    return [];
-  }
+// Hardcoded sticker lists for each major (since frontend has the actual files)
+const STICKER_LISTS = {
+  Architecture: [
+    "/stickers/Architecture/sticker.webp",
+    "/stickers/Architecture/sticker 2.webp",
+    "/stickers/Architecture/sticker 3.webp",
+    "/stickers/Architecture/sticker 4.webp",
+    "/stickers/Architecture/sticker 5.webp",
+    "/stickers/Architecture/sticker 6.webp",
+  ],
+  Civil: [
+    "/stickers/Civil/sticker.webp",
+    "/stickers/Civil/sticker 2.webp",
+    "/stickers/Civil/sticker 3.webp",
+    "/stickers/Civil/sticker 4.webp",
+    "/stickers/Civil/sticker 5.webp",
+    "/stickers/Civil/sticker 6.webp",
+    "/stickers/Civil/sticker 7.webp",
+    "/stickers/Civil/sticker 8.webp",
+  ],
+  Mechanical: [
+    "/stickers/Mechanical/sticker.webp",
+    "/stickers/Mechanical/sticker 2.webp",
+    "/stickers/Mechanical/sticker 3.webp",
+    "/stickers/Mechanical/sticker 4.webp",
+    "/stickers/Mechanical/sticker 5.webp",
+    "/stickers/Mechanical/sticker 6.webp",
+    "/stickers/Mechanical/sticker 7.webp",
+    "/stickers/Mechanical/sticker 8.webp",
+    "/stickers/Mechanical/sticker 9.webp",
+  ],
+  EC: [
+    "/stickers/EC/sticker.webp",
+    "/stickers/EC/sticker 2.webp",
+    "/stickers/EC/sticker 3.webp",
+    "/stickers/EC/sticker 4.webp",
+    "/stickers/EC/sticker 5.webp",
+    "/stickers/EC/sticker 6.webp",
+    "/stickers/EC/sticker 7.webp",
+    "/stickers/EC/sticker 8.webp",
+  ],
+  EP: [
+    "/stickers/EP/sticker.webp",
+    "/stickers/EP/sticker 2.webp",
+    "/stickers/EP/sticker 3.webp",
+    "/stickers/EP/sticker 4.webp",
+    "/stickers/EP/sticker 5.webp",
+    "/stickers/EP/sticker 6.webp",
+    "/stickers/EP/sticker 7.webp",
+    "/stickers/EP/sticker 8.webp",
+  ],
+  CEIT: [
+    "/stickers/CEIT/sticker.webp",
+    "/stickers/CEIT/sticker 2.webp",
+    "/stickers/CEIT/sticker 3.webp",
+    "/stickers/CEIT/sticker 4.webp",
+    "/stickers/CEIT/sticker 5.webp",
+    "/stickers/CEIT/sticker 6.webp",
+    "/stickers/CEIT/sticker 7.webp",
+    "/stickers/CEIT/sticker 8.webp",
+    "/stickers/CEIT/sticker 9.webp",
+  ],
+  MC: ["/stickers/MC/sticker1.svg"],
+  Petroleum: [
+    "/stickers/Petroleum/sticker.webp",
+    "/stickers/Petroleum/sticker 2.webp",
+    "/stickers/Petroleum/sticker 3.webp",
+    "/stickers/Petroleum/sticker 4.webp",
+    "/stickers/Petroleum/sticker 5.webp",
+    "/stickers/Petroleum/sticker 6.webp",
+    "/stickers/Petroleum/sticker 7.webp",
+    "/stickers/Petroleum/sticker 8.webp",
+  ],
+  Chemical: [
+    "/stickers/Chemical/sticker.webp",
+    "/stickers/Chemical/sticker 2.webp",
+    "/stickers/Chemical/sticker 3.webp",
+    "/stickers/Chemical/sticker 4.webp",
+    "/stickers/Chemical/sticker 5.webp",
+    "/stickers/Chemical/sticker 6.webp",
+    "/stickers/Chemical/sticker 7.webp",
+    "/stickers/Chemical/sticker 8.webp",
+    "/stickers/Chemical/sticker 9.webp",
+  ],
 };
 
-const getRandomSticker = async (major, previousStickers = []) => {
-  try {
-    const stickerDir = path.join(__dirname, "..", "public", "stickers", major);
-    const files = await fs.readdir(stickerDir);
-    let imageFiles = files.filter((file) =>
-      /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file),
-    );
+// Get all stickers from a major
+const getAllStickers = (major) => {
+  return STICKER_LISTS[major] || [];
+};
 
-    if (imageFiles.length === 0) {
-      throw new Error(`No stickers found for ${major}`);
-    }
+const getRandomSticker = (major, previousStickers = []) => {
+  const imageFiles = STICKER_LISTS[major] || [];
 
-    // Filter out previously shown stickers
-    const previousStickerNames = previousStickers
-      .filter((url) => url.includes(`/stickers/${major}/`))
-      .map((url) => url.split("/").pop());
-
-    const unshownStickers = imageFiles.filter(
-      (file) => !previousStickerNames.includes(file),
-    );
-
-    // If all stickers have been shown, reset and allow all again
-    if (unshownStickers.length === 0) {
-      // All stickers shown, reset to show all
-      imageFiles = files.filter((file) =>
-        /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(file),
-      );
-    } else {
-      imageFiles = unshownStickers;
-    }
-
-    const randomIndex = Math.floor(Math.random() * imageFiles.length);
-    return `/stickers/${major}/${imageFiles[randomIndex]}`;
-  } catch (error) {
-    console.error(`Error getting sticker for ${major}:`, error);
-    // Fallback to placeholder
+  if (imageFiles.length === 0) {
     return `/stickers/${major}/placeholder.png`;
   }
+
+  // Filter out previously shown stickers
+  const unshownStickers = imageFiles.filter(
+    (url) => !previousStickers.includes(url),
+  );
+
+  // If all stickers have been shown, reset and allow all again
+  const availableStickers =
+    unshownStickers.length === 0 ? imageFiles : unshownStickers;
+
+  const randomIndex = Math.floor(Math.random() * availableStickers.length);
+  return availableStickers[randomIndex];
 };
 
 // POST /api/match - Main matching endpoint
