@@ -15,6 +15,19 @@ const MAJORS = [
   "Chemical",
 ];
 
+// Major probabilities (must sum to 100)
+const MAJOR_PROBABILITIES = {
+  Civil: 16,
+  Mechanical: 15,
+  CEIT: 14,
+  EP: 13,
+  EC: 12,
+  Architecture: 9,
+  MC: 8,
+  Petroleum: 7,
+  Chemical: 6,
+};
+
 // Personality descriptions for each major
 const PERSONALITIES = {
   Architecture:
@@ -29,7 +42,7 @@ const PERSONALITIES = {
   Chemical: "Perfect chemistry creator, mixing well with everyone",
 };
 
-// Random match logic with exclusion of previous matches
+// Weighted random match logic with exclusion of previous matches
 const getRandomMatch = (userMajor, previousMatches = []) => {
   // Start with all majors except user's own
   let availableMajors = MAJORS.filter((major) => major !== userMajor);
@@ -46,8 +59,26 @@ const getRandomMatch = (userMajor, previousMatches = []) => {
     availableMajors = unshownMajors;
   }
 
-  const randomIndex = Math.floor(Math.random() * availableMajors.length);
-  return availableMajors[randomIndex];
+  // Calculate total weight for available majors
+  const totalWeight = availableMajors.reduce(
+    (sum, major) => sum + (MAJOR_PROBABILITIES[major] || 1),
+    0
+  );
+
+  // Generate random number between 0 and total weight
+  const random = Math.random() * totalWeight;
+
+  // Select major based on weighted probability
+  let cumulativeWeight = 0;
+  for (const major of availableMajors) {
+    cumulativeWeight += MAJOR_PROBABILITIES[major] || 1;
+    if (random < cumulativeWeight) {
+      return major;
+    }
+  }
+
+  // Fallback (should never reach here)
+  return availableMajors[availableMajors.length - 1];
 };
 
 // Sticker counts for each major (frontend has the actual files)
@@ -67,7 +98,7 @@ const STICKER_COUNTS = {
 const getAllStickerIds = (major) => {
   const count = STICKER_COUNTS[major] || 0;
   const ids = [];
-  
+
   for (let i = 1; i <= count; i++) {
     if (i === 1) {
       ids.push("sticker");
@@ -120,10 +151,7 @@ router.post("/match", async (req, res) => {
     const matched_major = getRandomMatch(major, previousMatches || []);
 
     // Get random sticker ID, excluding previous sticker IDs
-    const stickerId = getRandomStickerId(
-      matched_major,
-      previousStickers || [],
-    );
+    const stickerId = getRandomStickerId(matched_major, previousStickers || []);
 
     // Get all sticker IDs for the matched major (for slot animation)
     const allStickerIds = getAllStickerIds(matched_major);
