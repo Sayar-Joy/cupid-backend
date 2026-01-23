@@ -62,7 +62,7 @@ const getRandomMatch = (userMajor, previousMatches = []) => {
   // Calculate total weight for available majors
   const totalWeight = availableMajors.reduce(
     (sum, major) => sum + (MAJOR_PROBABILITIES[major] || 1),
-    0
+    0,
   );
 
   // Generate random number between 0 and total weight
@@ -216,6 +216,43 @@ router.post("/confirm-match", async (req, res) => {
     console.error("Confirm match error:", error);
     res.status(500).json({
       error: "An error occurred while saving your match",
+    });
+  }
+});
+
+// GET /api/admin/users - Get all saved matches (Admin endpoint)
+router.get("/admin/users", async (req, res) => {
+  try {
+    // Fetch all users, sorted by creation date (newest first)
+    const users = await User.find()
+      .sort({ created_at: -1 })
+      .select("name major matched_major sticker created_at");
+
+    // Get statistics
+    const totalUsers = users.length;
+    const majorStats = {};
+    const matchedMajorStats = {};
+
+    users.forEach((user) => {
+      // Count user majors
+      majorStats[user.major] = (majorStats[user.major] || 0) + 1;
+      // Count matched majors
+      matchedMajorStats[user.matched_major] =
+        (matchedMajorStats[user.matched_major] || 0) + 1;
+    });
+
+    res.json({
+      totalUsers,
+      users,
+      statistics: {
+        byMajor: majorStats,
+        byMatchedMajor: matchedMajorStats,
+      },
+    });
+  } catch (error) {
+    console.error("Admin fetch error:", error);
+    res.status(500).json({
+      error: "An error occurred while fetching user data",
     });
   }
 });
